@@ -87,21 +87,19 @@ async function uploadPhotosToPeer(token, groupId, peerId, bufs, filenames) {
 }
 
 async function uploadVideoToPeer(token, groupId, buf, filename) {
-  const save = await vkApi(token, 'video.save', {
+  // Групповому токену недоступен scope video (video.save → [5]), поэтому
+  // видео отправляется ВЛОЖЕНИЕМ-ДОКУМЕНТОМ (mp4) — та же файловая загрузка.
+  const upload = await vkApi(token, 'docs.getMessagesUploadServer', {
+    type: 'doc',
     group_id: groupId,
-    name: filename || 'video.mp4',
-    is_private: 1,
-    wallpost: 0,
-    no_comments: 1,
   });
   const form = new FormData();
-  form.append('video_file', new Blob([buf]), filename || 'video.mp4');
-  const upRes = await fetch(save.upload_url, { method: 'POST', body: form });
-  const text = await upRes.text();
-  let up;
-  try { up = JSON.parse(text); } catch (e) { up = { error: text.slice(0, 200) }; }
-  if (!up || up.error) throw new Error(`upload video failed: ${JSON.stringify(up).slice(0, 300)}`);
-  return `video${save.owner_id}_${up.video_id}_${save.access_key}`;
+  form.append('file', new Blob([buf], { type: 'video/mp4' }), filename || 'video.mp4');
+  const upRes = await (await fetch(upload.upload_url, { method: 'POST', body: form })).json();
+  if (!upRes.file) throw new Error(`upload video failed: ${JSON.stringify(upRes).slice(0, 300)}`);
+  const saved = await vkApi(token, 'docs.save', { file: upRes.file });
+  const d = saved.doc || saved;
+  return `doc${d.owner_id}_${d.id}`;
 }
 
 export function filterPeerList(convs) {
