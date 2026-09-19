@@ -67,7 +67,6 @@ async function vkApi(token, method, params) {
 async function uploadPhotosToPeer(token, groupId, peerId, bufs, filenames) {
   const upload = await vkApi(token, 'photos.getMessagesUploadServer', {
     group_id: groupId,
-    peer_id: peerId,
   });
   const attachments = [];
   for (let i = 0; i < bufs.length; i++) {
