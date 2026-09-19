@@ -399,6 +399,7 @@ body {
   border: 1px solid rgba(255, 122, 158, 0.4);
   background: linear-gradient(135deg, rgba(255, 80, 120, 0.10), rgba(255, 122, 158, 0.04));
 }
+.danger-zone-top { margin-top: 0; margin-bottom: 18px; }
 .danger-zone .btn-danger { box-shadow: 0 6px 18px rgba(255, 80, 120, 0.35); }
 
 .dz-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }

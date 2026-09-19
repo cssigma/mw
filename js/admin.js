@@ -916,6 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUsers().then(() => syncDistrictsAggregate().then(() => showToast('Рейтинг округов обновлён')));
   });
   document.getElementById('btn-destroy-all').addEventListener('click', openDestroyAllWizard);
+  document.getElementById('btn-destroy-quick').addEventListener('click', openDestroyAllWizard);
 
   document.getElementById('users-search').addEventListener('input', (e) => {
     userQuery = e.target.value;

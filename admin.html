@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=62">
+  <link rel="stylesheet" href="css/styles.css?v=63">
   <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -114,6 +114,13 @@
 
     <!-- СТАТИСТИКА -->
     <div class="tab-pane" data-pane="stats" style="display:none">
+      <div class="card danger-zone danger-zone-top">
+        <div class="dz-head">
+          <i data-feather="alert-triangle"></i>
+          <div class="grow"><b>Полный сброс данных</b><small>участники · баллы · задания · расписание · заявки — всё начисто</small></div>
+        </div>
+        <button id="btn-destroy-quick" class="btn btn-danger btn-block" type="button">Сбросить все данные слёта</button>
+      </div>
       <div class="stat-grid">
         <div class="stat"><b id="stat-users">0</b><span>Участников</span></div>
         <div class="stat"><b id="stat-sum">0</b><span>Сумма баллов</span></div>
@@ -139,6 +146,6 @@
   <script src="js/districts.js?v=56"></script>
   <script src="js/schedule.js?v=56"></script>
   <script src="js/vk.js?v=56"></script>
-  <script src="js/admin.js?v=60"></script>
+  <script src="js/admin.js?v=61"></script>
 </body>
 </html>
