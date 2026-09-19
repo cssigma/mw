@@ -239,14 +239,22 @@ async function scanAndDecide(env, db, submissions, peers) {
         decidedAt: FieldValue.serverTimestamp(),
       });
       if (decision === 'approve' && sub.uid) {
-        const apply = {
-          [`done.${sub.taskId}`]: true,
-          updatedAt: FieldValue.serverTimestamp(),
-        };
+        const apply = { updatedAt: FieldValue.serverTimestamp() };
         // Командное с медиа (noAward): баллы всей команде начислит организатор
         // через админку — бот лично участнику не начисляет.
         if (!sub.noAward) apply.score = FieldValue.increment(sub.points || 0);
-        await db.doc(`users/${sub.uid}`).set(apply, { merge: true });
+        // update() трактует точку в ключе как вложенный путь (done.taskId = true),
+        // в отличие от set(merge), который создал бы буквальное поле "done.6toZ...".
+        try {
+          await db.doc(`users/${sub.uid}`).update(
+            { ...apply, [`done.${sub.taskId}`]: true }
+          );
+        } catch (e) {
+          await db.doc(`users/${sub.uid}`).set(
+            { ...apply, done: { [sub.taskId]: true } },
+            { merge: true }
+          );
+        }
         console.log(`awarded ${sub.noAward ? '(team) ' : ''}${sub.points} to ${sub.uid}`);
       }
       const statusText = buildStatusText(sub, decision);
