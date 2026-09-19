@@ -86,12 +86,13 @@ async function uploadPhotosToPeer(token, groupId, peerId, bufs, filenames) {
   return attachments.join(',');
 }
 
-async function uploadVideoToPeer(token, groupId, buf, filename) {
+async function uploadVideoToPeer(token, groupId, peerId, buf, filename) {
   // Групповому токену недоступен scope video (video.save → [5]), поэтому
   // видео отправляется ВЛОЖЕНИЕМ-ДОКУМЕНТОМ (mp4) — та же файловая загрузка.
   const upload = await vkApi(token, 'docs.getMessagesUploadServer', {
     type: 'doc',
     group_id: groupId,
+    peer_id: peerId,
   });
   const form = new FormData();
   form.append('file', new Blob([buf], { type: 'video/mp4' }), filename || 'video.mp4');
@@ -197,7 +198,7 @@ async function sendSubmission(env, db, bucket, snap, peers) {
       console.log(`skip ${snap.id} (empty video)`);
       return;
     }
-    const attachment = await uploadVideoToPeer(env.VK_TOKEN, env.VK_GROUP_ID, vbuf, sub.videoName || 'video.mp4');
+    const attachment = await uploadVideoToPeer(env.VK_TOKEN, env.VK_GROUP_ID, peers[0], vbuf, sub.videoName || 'video.mp4');
     await sendToPeers(env, db, snap, peers, sub, attachment);
     return;
   }
