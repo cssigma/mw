@@ -1190,38 +1190,6 @@ function renderMyRatingBlock() {
   wrap.innerHTML = '<div class="rate-mine">' + avatarInner + '<div class="grow">' + body + '</div></div>';
 }
 
-/* «Итоги дня» — вечерний срез рейтинга одним тапом. Ничего дополнительно не
-   читает: использует уже загруженные топ-10 и агрегат округов (кэш 10 мин).
-   Повторный тап обновляет время среза. */
-function renderDaySummary() {
-  const wrap = document.getElementById('day-summary');
-  if (!wrap) return;
-  const medals = ['🥇', '🥈', '🥉'];
-  const top = ratingTop || [];
-  const dist = districtRatingCached() || [];
-  if (!top.length && !dist.length) { wrap.innerHTML = ''; return; }
-  const topRows = top.map((u, i) =>
-    '<div class="rate-row">' +
-    '<div class="rate-rank">' + (medals[i] || (i + 1)) + '</div>' +
-    '<div class="rate-name"><span class="rate-name-text">' + escapeHtml(u.name || 'Без имени') + '</span></div>' +
-    '<div class="rate-pts">' + (u.score || 0) + '</div>' +
-    '</div>'
-  ).join('');
-  const distRows = dist.map((r, i) =>
-    '<div class="rate-row">' +
-    '<div class="rate-rank">' + (i + 1) + '</div>' +
-    '<div class="rate-name"><span class="rate-name-text">' + escapeHtml(r.district) + '</span></div>' +
-    '<div class="rate-pts">' + (r.score || 0) + '</div>' +
-    '</div>'
-  ).join('');
-  const now = new Date();
-  const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-  wrap.innerHTML =
-    '<div class="sec-sub day-summary-head">🏁 Итоги дня · срез на ' + time + '</div>' +
-    (topRows ? '<div class="sec-sub" style="margin:16px 0 8px">Участники · топ-10</div>' + topRows : '') +
-    (distRows ? '<div class="sec-sub" style="margin:16px 0 8px">Рейтинг округов</div>' + distRows : '');
-}
-
 /* ---------- Запуск ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sched-refresh').addEventListener('click', () => {
@@ -1236,15 +1204,6 @@ document.addEventListener('DOMContentLoaded', () => {
       loadRating();
       loadRatingDistricts(true);
       renderMyRatingBlock();
-    });
-  }
-  const daySummaryBtn = document.getElementById('day-summary');
-  if (daySummaryBtn) {
-    daySummaryBtn.addEventListener('click', async () => {
-      vkFeedback('click');
-      await loadRating();
-      await loadRatingDistricts();
-      renderDaySummary();
     });
   }
   const adminBtn = document.getElementById('btn-admin-open');
