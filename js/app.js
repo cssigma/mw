@@ -492,9 +492,10 @@ async function refreshSchedule() {
 
 /* ---------- Рейтинг топ-10 ----------
    БЕЗ live-подписки: живой топ-10 при 150 участниках множил бы чтения
-   (каждая запись балла топ-игрока → снапшот всем). Грузим по запросу,
-   а повторные открытия вкладки/тыки по «Обновить» отдаём из кэша 60 сек —
-   спам-тапами дневной лимит чтений не пробить. */
+   (каждая запись балла топ-игрока → снапшот всем). Топ-10 приходит из
+   ОДНОГО документа-агрегата rating/top10 (пишет админка после начислений) —
+   1 чтение вместо 10. Повторные открытия вкладки/тыки по «Обновить» отдаём
+   из кэша RATING_TTL — спам-тапами дневной лимит чтений не пробить. */
 const RATING_CACHE_KEY = 'mw_rating_cache_v1';
 const RATING_TTL = 10 * 60 * 1000;
 // Рейтинг округов приходит из ОДНОГО документа-агрегата rating/districts,
@@ -547,8 +548,16 @@ async function loadRating() {
     wrap.innerHTML = '<div class="skel h18"></div><div class="skel h18"></div><div class="skel h18"></div>';
   }
   try {
-    const snap = await db.collection('users').orderBy('score', 'desc').limit(10).get();
-    ratingTop = snap.docs.map((d) => ({ uid: d.id, ...d.data() })).filter(ratingVisible);
+    // Топ-10 — из агрегата rating/top10 (пишет админка после начислений):
+    // 1 документ вместо 10 чтений users. При отсутствии/битом агрегате
+    // читаем напрямую (fallback, редкий путь при старом пресете админки).
+    const snap = await db.doc('rating/top10').get();
+    if (snap.exists && Array.isArray(snap.data().list) && snap.data().list.length) {
+      ratingTop = snap.data().list.filter(ratingVisible);
+    } else {
+      const fallback = await db.collection('users').orderBy('score', 'desc').limit(10).get();
+      ratingTop = fallback.docs.map((d) => ({ uid: d.id, ...d.data() })).filter(ratingVisible);
+    }
     try { localStorage.setItem(RATING_CACHE_KEY, JSON.stringify({ ts: Date.now(), list: ratingTop })); } catch (e) {}
     renderRating();
   } catch (err) {

@@ -821,18 +821,31 @@ function districtStats() {
     .sort((a, b) => b.score - a.score);
 }
 
-/* Пересчёт агрегата «rating/districts» — единственный документ, который
-   участники читают для рейтинга округов (1 чтение вместо ~150). Вызывается
-   после каждой админ-операции, меняющей баллы; usersCache уже обновлён. */
+/* Пересчёт агрегатов рейтинга — единственные документы, которые участники
+   читают вместо перебора всех users (~150):
+   - rating/districts — суммы баллов по округам (ранее syncDistrictsAggregate);
+   - rating/top10 — топ-10 участников по баллам (ранее 10 чтений в app.js).
+   Вызывается после каждой админ-операции, меняющей баллы; usersCache обновлён. */
 async function syncDistrictsAggregate() {
   if (DEV_MODE) return;
   if (!db) return;
   const rows = districtStats();
+  const top = [...usersCache]
+    .filter((u) => u.showInRating !== false)
+    .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
+    .slice(0, 10)
+    .map((u) => ({
+      uid: u.uid,
+      vkId: u.vkId,
+      name: u.name,
+      avatar: u.avatar,
+      role: u.role,
+      score: Number(u.score) || 0,
+    }));
   try {
-    await db.doc('rating/districts').set({
-      list: rows,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
+    const stamp = firebase.firestore.FieldValue.serverTimestamp();
+    await db.doc('rating/districts').set({ list: rows, updatedAt: stamp });
+    await db.doc('rating/top10').set({ list: top, updatedAt: stamp });
   } catch (err) {
     /* молча — следующий пересчёт или ручная кнопка всё поправит */
   }
