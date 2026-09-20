@@ -84,6 +84,7 @@ async function init() {
       subscribeScore(myUid, vk);
       subscribeTasks(myUid);
       subscribeSchedule();
+      subscribeMaintenance();
     }
   } catch (err) {
     console.error(err);
@@ -474,6 +475,32 @@ function subscribeSchedule() {
     },
     () => { /* молчим — останется кэш + кнопка «Обновить» */ }
   );
+}
+
+/* Технический перерыв: единственный документ config/maintenance (пишет админ).
+   Живая подписка — оверлей появляется/исчезает у участников мгновенно,
+   без перезагрузки. 1 чтение на клиента при установке списка + при изменении. */
+function subscribeMaintenance() {
+  listenWithFallback(
+    db.doc('config/maintenance'),
+    (snap) => {
+      const d = (snap.exists && snap.data()) || {};
+      setMaintenanceOverlay(d.active === true, d.text || '');
+    },
+    () => { /* молчим — при недоступности оверлей не показываем */ }
+  );
+}
+
+function setMaintenanceOverlay(on, text) {
+  const el = document.getElementById('maint-overlay');
+  if (!el) return;
+  if (on) {
+    const t = document.getElementById('maint-text');
+    if (t && text) t.textContent = text;
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 /* Кнопка «Обновить» — ручной фолбэк к живой подписке */

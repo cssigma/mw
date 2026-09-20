@@ -74,6 +74,12 @@ service cloud.firestore {
     }
 
     // ---------- Конфиг ----------
+    // Технический перерыв: читают все участники (живая подписка), включает админ.
+    match /config/maintenance {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     // Список админов (VK ID) — только чтение, изменение только из консоли Firebase.
     match /config/admins {
       allow read: if true;

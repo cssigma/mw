@@ -209,9 +209,34 @@ body {
   content: ""; position: absolute; left: 2px; top: 2px; width: 26px; height: 26px;
   background: #fff; border-radius: 50%; transition: 0.3s var(--ease); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
-.switch input:checked + .slider::before, .set-row.on .sw i {
+.switch input:checked + .slider::before, .set-row.on .sw i, #maint-switch.on i {
   transform: translateX(20px);
 }
+#maint-switch.on { background: var(--grad); }
+#maint-switch { cursor: pointer; }
+
+/* --- Технический перерыв: полноэкранный оверлей у участников --- */
+.maint-overlay {
+  position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+  background: rgba(6, 4, 16, 0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: maint-in 0.28s var(--ease);
+  -webkit-animation: maint-in 0.28s var(--ease);
+}
+.maint-overlay .maint-box {
+  max-width: 340px; width: calc(100% - 48px); margin: 0 auto; text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg, 16px);
+  padding: 28px 22px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+.maint-box i { width: 48px; height: 48px; color: var(--accent, #34e07a); margin: 0 auto 14px; display: block; }
+.maint-box .maint-title { display: block; font-size: 19px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+.maint-box span { display: block; font-size: 15px; line-height: 1.5; color: var(--text-main); }
+.maint-box small { display: block; margin-top: 10px; font-size: 13px; color: var(--text-muted, rgba(255,255,255,0.55)); }
+@keyframes maint-in { from { opacity: 0; } to { opacity: 1; } }
 
 /* --- Настройки --- */
 .set-row { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 0.5px solid var(--outline-variant); cursor: pointer; }

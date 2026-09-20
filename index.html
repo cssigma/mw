@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=63">
+  <link rel="stylesheet" href="css/styles.css?v=65">
   <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -25,6 +25,16 @@
 </head>
 <body>
   <div id="toasts"></div>
+
+  <!-- Технический перерыв: полноэкранный оверлей, включается из админки -->
+  <div id="maint-overlay" class="maint-overlay" style="display:none">
+    <div class="maint-box">
+      <i data-feather="tool"></i>
+      <b class="maint-title">Технический перерыв</b>
+      <span id="maint-text">Мы ненадолго отключаем приложение, чтобы всё работало лучше.</span>
+      <small>Обычно это занимает несколько минут — скоро продолжим!</small>
+    </div>
+  </div>
 
   <div class="shell">
     <!-- Верхняя панель — на уровне шапки VK (крестик / ⋯ справа вверху) -->
@@ -133,7 +143,7 @@
   <script src="js/districts.js?v=56"></script>
   <script src="js/schedule.js?v=56"></script>
   <script src="js/vk.js?v=56"></script>
-  <script src="js/app.js?v=67"></script>
+  <script src="js/app.js?v=68"></script>
   <script>
     /* Вход в админку по deep-link: ...vk.com/app54716297#admin */
     (function () {

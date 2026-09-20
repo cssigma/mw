@@ -79,6 +79,7 @@ async function initAdmin() {
     await Promise.all([loadUsers(), loadTasks()]);
     loadSchedulePanel();
     renderStats();
+    loadMaintenanceState();
     switchTab('schedule');
   } catch (err) {
     console.error(err);
@@ -607,6 +608,55 @@ async function deleteTask(id) {
 }
 
 /* ============================================================
+   ТЕХНИЧЕСКИЙ ПЕРЕРЫВ
+   Один документ config/maintenance. Участники подписаны на него живьём:
+   active=true → у всех мгновенно оверлей «перерыв». Включаем, пока чиним. */
+let maintenanceActive = false;
+let maintEl;
+
+function renderMaintenance() {
+  if (!maintEl) {
+    maintEl = document.getElementById('maint-switch');
+    if (!maintEl) return;
+  }
+  maintEl.classList.toggle('on', maintenanceActive);
+  const hint = maintEl.parentElement.querySelector('small');
+  if (hint) hint.textContent = maintenanceActive
+    ? 'Перерыв ВКЛЮЧЁН — участники видят оверлей. Нажми, чтобы убрать.'
+    : 'покажет участникам оверлей «перерыв» на время исправления неполадок';
+}
+
+async function toggleMaintenance() {
+  if (!db) return;
+  const next = !maintenanceActive;
+  const text = document.getElementById('maint-text').value.trim() || '';
+  try {
+    await db.doc('config/maintenance').set({
+      active: next,
+      text: text,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    maintenanceActive = next;
+    renderMaintenance();
+    showToast(next ? 'Перерыв включён — участники видят оверлей' : 'Перерыв выключен');
+  } catch (err) {
+    showToast('Ошибка: ' + err.message, true);
+  }
+}
+
+async function loadMaintenanceState() {
+  if (!db) return;
+  try {
+    const snap = await db.doc('config/maintenance').get();
+    const d = (snap.exists && snap.data()) || {};
+    maintenanceActive = d.active === true;
+    const inp = document.getElementById('maint-text');
+    if (inp && d.text) inp.value = d.text;
+    renderMaintenance();
+  } catch (e) { /* молчим — фолбэк будет при первой попытке включить */ }
+}
+
+/* ============================================================
    УЧАСТНИКИ
    ============================================================ */
 async function loadUsers() {
@@ -930,6 +980,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-destroy-all').addEventListener('click', openDestroyAllWizard);
   document.getElementById('btn-db-refresh').addEventListener('click', refreshDbStats);
+
+  document.getElementById('maint-switch').addEventListener('click', toggleMaintenance);
+  document.getElementById('maint-switch').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMaintenance(); }
+  });
 
   document.getElementById('users-search').addEventListener('input', (e) => {
     userQuery = e.target.value;
