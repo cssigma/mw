@@ -1153,7 +1153,7 @@ async function refreshDbStats() {
     const rows = [];
     let totalBytes = 0;
     let totalDocs = 0;
-    for (const name of ['schedule', 'tasks', 'users', 'submissions', 'config']) {
+    for (const name of ['schedule', 'tasks', 'users', 'submissions']) {
       const snap = await db.collection(name).get();
       let bytes = 0;
       snap.docs.forEach((d) => {
@@ -1163,6 +1163,16 @@ async function refreshDbStats() {
       totalDocs += snap.size;
       rows.push({ name, docs: snap.size, bytes });
     }
+    // config — правила разрешают только точечное чтение config/admins
+    try {
+      const adminsDoc = await db.doc('config/admins').get();
+      if (adminsDoc.exists) {
+        const bytes = JSON.stringify(adminsDoc.data() || {}).length;
+        totalBytes += bytes;
+        totalDocs += 1;
+        rows.push({ name: 'config/admins', docs: 1, bytes });
+      }
+    } catch (e) {}
     // подколлекция chunk'ов (медиа-заявки)
     const subs = await db.collection('submissions').get();
     let chunkBytes = 0;
