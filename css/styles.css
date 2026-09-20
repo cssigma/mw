@@ -244,6 +244,18 @@ body {
 .day-summary-head { display: block; text-align: center; margin-top: 16px; font-size: 17px; font-weight: 800; color: var(--text-main); letter-spacing: -0.3px; }
 #day-summary .rate-row { margin-bottom: 6px; }
 
+/* --- Статистика БД (админка) --- */
+.db-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.db-table td { padding: 9px 6px; border-bottom: 1px solid var(--outline-variant); }
+.db-table td:first-child { font-weight: 600; }
+.db-num { text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.db-total td { font-weight: 800; border-bottom: none; padding-top: 12px; color: var(--text-main); }
+.db-total .db-num { color: var(--accent); }
+.db-progress { height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--outline-variant); overflow: hidden; margin-top: 12px; }
+.db-progress-fill { height: 100%; border-radius: 999px; background: var(--grad); transition: width .4s ease; }
+.db-progress-fill.hot { background: linear-gradient(135deg, #ff8a5c, #ff4d6d); }
+.db-caption { font-size: 12.5px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
+
 /* --- Задания --- */
 .task { display: flex; align-items: center; gap: 14px; padding: 16px; }
 .task-pts { background: var(--secondary-container); color: var(--secondary); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 14px; }

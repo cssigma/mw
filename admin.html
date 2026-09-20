@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=63">
+  <link rel="stylesheet" href="css/styles.css?v=64">
   <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -129,6 +129,13 @@
       </div>
       <div class="sec-sub" style="margin:18px 0 8px">Рейтинг округов · сумма баллов</div>
       <div id="stat-district"></div>
+      <div class="sec-sub" style="margin:18px 0 8px">База данных · документы и нагрузка</div>
+      <div class="card">
+        <div id="db-stats" class="db-stats"><div class="empty">Подсчёт…</div></div>
+        <div class="db-progress"><div class="db-progress-fill" id="db-storage-fill" style="width:0%"></div></div>
+        <div class="db-caption" id="db-caption"></div>
+        <button id="btn-db-refresh" class="btn btn-ghost btn-sm" type="button" style="margin-top:10px">Пересчитать</button>
+      </div>
     </div>
 
     <!-- ОПАСНАЯ ЗОНА: отделена от вкладок, требует многошагового подтверждения -->
@@ -146,6 +153,6 @@
   <script src="js/districts.js?v=56"></script>
   <script src="js/schedule.js?v=56"></script>
   <script src="js/vk.js?v=56"></script>
-  <script src="js/admin.js?v=61"></script>
+  <script src="js/admin.js?v=62"></script>
 </body>
 </html>

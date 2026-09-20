@@ -115,7 +115,7 @@ function switchTab(name) {
     b.classList.toggle('on', b.dataset.tab === name));
   document.querySelectorAll('.tab-pane').forEach((p) =>
     p.style.display = p.dataset.pane === name ? 'block' : 'none');
-  if (name === 'stats') { loadUsers().then(renderStats); }
+  if (name === 'stats') { loadUsers().then(renderStats); refreshDbStats(); }
 }
 
 /* ============================================================
@@ -917,6 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-destroy-all').addEventListener('click', openDestroyAllWizard);
   document.getElementById('btn-destroy-quick').addEventListener('click', openDestroyAllWizard);
+  document.getElementById('btn-db-refresh').addEventListener('click', refreshDbStats);
 
   document.getElementById('users-search').addEventListener('input', (e) => {
     userQuery = e.target.value;
@@ -1132,4 +1133,67 @@ async function destroyAllData() {
   await deleteCollection('users');
   await deleteCollection('submissions', 'chunks');
   await db.doc('rating/districts').delete().catch(() => {});
+}
+
+/* ============================================================
+   СТАТИСТИКА БАЗЫ ДАННЫХ
+   Считает документы в коллекциях + примерный размер (байты).
+   Лимиты бесплатного Firestore (Spark) выводит для ориентира:
+   хранилище 1 ГБ, чтений 50К/день, записей 20К/день, удалений 20К/день.
+   ============================================================ */
+const DB_LIMITS_STORAGE = 1024 * 1024 * 1024;   // 1 GiB
+const DB_LIMITS_READ = 50000;
+const DB_LIMITS_WRITE = 20000;
+
+async function refreshDbStats() {
+  const wrap = document.getElementById('db-stats');
+  if (!wrap) return;
+  try {
+    wrap.innerHTML = '<div class="empty">Подсчёт…</div>';
+    const rows = [];
+    let totalBytes = 0;
+    let totalDocs = 0;
+    for (const name of ['schedule', 'tasks', 'users', 'submissions', 'config']) {
+      const snap = await db.collection(name).get();
+      let bytes = 0;
+      snap.docs.forEach((d) => {
+        try { bytes += JSON.stringify(d.data() || {}).length; } catch (e) {}
+      });
+      totalBytes += bytes;
+      totalDocs += snap.size;
+      rows.push({ name, docs: snap.size, bytes });
+    }
+    // подколлекция chunk'ов (медиа-заявки)
+    const subs = await db.collection('submissions').get();
+    let chunkBytes = 0;
+    let chunkDocs = 0;
+    for (const d of subs.docs) {
+      const cs = await db.collection('submissions/' + d.id + '/chunks').get();
+      cs.docs.forEach((c) => {
+        chunkDocs++;
+        try { chunkBytes += JSON.stringify(c.data() || {}).length; } catch (e) {}
+      });
+    }
+    if (chunkDocs) {
+      totalBytes += chunkBytes;
+      totalDocs += chunkDocs;
+      rows.push({ name: 'chunks', docs: chunkDocs, bytes: chunkBytes });
+    }
+    const fmtB = (b) => b >= 1048576 ? (b / 1048576).toFixed(2) + ' МБ' : b >= 1024 ? (b / 1024).toFixed(1) + ' КБ' : b + ' Б';
+    const pct = Math.min(100, Math.round((totalBytes / DB_LIMITS_STORAGE) * 1000) / 10);
+    wrap.innerHTML = rows.length
+      ? '<table class="db-table"><tbody>' +
+        rows.map((r) =>
+          '<tr><td>' + escapeHtml(r.name) + '</td><td class="db-num">' + r.docs + ' док.</td><td class="db-num">' + fmtB(r.bytes) + '</td></tr>'
+        ).join('') +
+        '<tr class="db-total"><td>Итого</td><td class="db-num">' + totalDocs + ' док.</td><td class="db-num">' + fmtB(totalBytes) + '</td></tr>' +
+        '</tbody></table>'
+      : '<div class="empty">База пуста</div>';
+    document.getElementById('db-storage-fill').style.width = pct + '%';
+    document.getElementById('db-storage-fill').classList.toggle('hot', pct >= 50);
+    const cap = document.getElementById('db-caption');
+    cap.textContent = 'Хранилище ~' + fmtB(totalBytes) + ' из 1 ГБ (' + pct + '%) · лимиты Spark: чтений 50К/день, записей 20К/день, удалений 20К/день';
+  } catch (err) {
+    wrap.innerHTML = '<div class="empty">Не удалось подсчитать: ' + escapeHtml(err.message) + '</div>';
+  }
 }
